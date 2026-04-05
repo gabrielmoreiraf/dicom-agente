@@ -1,12 +1,13 @@
 import { db } from "@/db";
 import type { DiagnosisRecord, DiagnosisStatus } from "@/domain/diagnosis";
+import { randomUUID } from "@/lib/randomUUID";
 import { getDefaultDiagnosisValues, type DiagnosisFormValues } from "@/schemas/diagnosis";
 
 /** Máximo de vezes que o agente pode concluir o formulário novamente após a primeira conclusão. */
 export const MAX_POST_COMPLETION_EDITS = 2;
 
 export async function createDraft(): Promise<string> {
-  const local_id = crypto.randomUUID();
+  const local_id = randomUUID();
   const now = new Date().toISOString();
   const row: DiagnosisRecord = {
     local_id,

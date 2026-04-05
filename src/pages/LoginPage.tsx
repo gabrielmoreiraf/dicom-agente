@@ -2,8 +2,9 @@ import { useState } from "react";
 import Login from "@mui/icons-material/Login";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Controller, useForm } from "react-hook-form";
-import { Link, Navigate, useNavigate } from "react-router-dom";
+import { Navigate, useNavigate } from "react-router-dom";
 import { useAuth } from "@/features/auth/AuthContext";
+import { ForgotPasswordDialog } from "@/features/auth/components/ForgotPasswordDialog";
 import { PasswordField } from "@/components/PasswordField";
 import { maskCpf } from "@/lib/cpf";
 import { loginSchema, type LoginForm } from "@/schemas/auth";
@@ -13,6 +14,7 @@ export function LoginPage() {
   const { user, loading, mustChangePassword, login } = useAuth();
   const nav = useNavigate();
   const [loginError, setLoginError] = useState<string | null>(null);
+  const [forgotPasswordOpen, setForgotPasswordOpen] = useState(false);
   const {
     control,
     register,
@@ -93,6 +95,16 @@ export function LoginPage() {
               )}
             </div>
 
+            <div className={styles.forgotRow}>
+              <button
+                type="button"
+                className={styles.forgotLink}
+                onClick={() => setForgotPasswordOpen(true)}
+              >
+                Esqueceu a senha?
+              </button>
+            </div>
+
             {loginError && (
               <p className={styles.alert} role="alert">
                 {loginError}
@@ -116,13 +128,16 @@ export function LoginPage() {
           </form>
         </div>
 
-        <p className={styles.note}>
+        {/* <p className={styles.note}>
           Sessão e diagnósticos armazenados localmente (IndexedDB).{" "}
           <Link to="/privacidade" className={styles.privacyLink}>
             Privacidade
           </Link>
+        </p> */}
+        <p className={styles.note}>
+          Acesso permitido somente com autorização da Secretaria de Agricultura.
         </p>
-
+          
         <footer className={styles.footer}>
           <img
             src="/logo_itatira.png"
@@ -131,6 +146,8 @@ export function LoginPage() {
           />
         </footer>
       </div>
+
+      <ForgotPasswordDialog open={forgotPasswordOpen} onOpenChange={setForgotPasswordOpen} />
     </div>
   );
 }

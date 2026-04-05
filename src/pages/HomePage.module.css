@@ -5,15 +5,9 @@
   max-width: 48rem;
 }
 
-/* Header mobile já mostra Início + texto; no desktop o header some — repete o bloco aqui. */
-.introDesktopOnly {
-  display: none;
-}
-
-@media (min-width: 768px) {
-  .introDesktopOnly {
-    display: block;
-  }
+/* Início + status de rede: no mobile o header só tem a logo; o texto fica aqui. */
+.pageIntro {
+  text-align: center;
 }
 
 .root > * + * {
@@ -98,6 +92,9 @@
 }
 
 .statCard {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   border-radius: 1rem;
   border: 1px solid rgba(229, 229, 229, 0.9);
   background: #fff;
@@ -107,8 +104,10 @@
 }
 
 .statCardButton {
-  display: block;
+  display: flex;
   width: 100%;
+  flex-direction: column;
+  align-items: center;
   cursor: pointer;
   border-radius: 1rem;
   border: 1px solid rgba(229, 229, 229, 0.9);
@@ -132,77 +131,124 @@
 }
 
 .statValue {
+  width: 100%;
   font-family: var(--font-display);
   font-size: 1.5rem;
   font-weight: 700;
   color: var(--color-primary);
+  text-align: center;
 }
 
 .statLabel {
+  width: 100%;
+  max-width: 100%;
   font-size: 11px;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
+  text-align: center;
+  /* letter-spacing deixa espaço após a última letra; sem isso o bloco “cru” parece deslocado à esquerda */
+  margin-inline-end: -0.05em;
   color: var(--neutral-500);
 }
 
 .cta {
   position: relative;
+  isolation: isolate;
   display: flex;
   width: 100%;
-  flex-direction: column;
+  align-items: center;
+  gap: 1.125rem;
   overflow: hidden;
   border-radius: var(--radius-4xl);
   border: 0;
-  background: var(--color-primary);
-  padding: 1.25rem;
+  padding: 1.35rem 1.35rem;
   text-align: left;
   color: #fff;
-  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
   cursor: pointer;
-  transition: background 0.15s ease;
+  background: linear-gradient(
+    135deg,
+    var(--color-primary-dark) 0%,
+    var(--color-primary) 52%,
+    var(--emerald-900) 100%
+  );
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.18) inset,
+    0 14px 36px -12px rgb(6 78 59 / 0.45);
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    filter 0.2s ease;
 }
 
 .cta:hover {
-  background: var(--color-primary-dark);
+  filter: brightness(1.06);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.22) inset,
+    0 18px 42px -12px rgb(6 78 59 / 0.5);
 }
 
-.ctaIconWrap {
+.cta:active {
+  transform: scale(0.985);
+}
+
+.cta:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+
+.ctaSheen {
+  pointer-events: none;
   position: absolute;
-  right: 1rem;
-  top: 1rem;
-  display: flex;
-  height: 3rem;
-  width: 3rem;
-  align-items: center;
-  justify-content: center;
-  border-radius: 1rem;
-  background: rgba(0, 0, 0, 0.15);
+  inset: 0;
+  z-index: 0;
+  background: linear-gradient(
+    118deg,
+    transparent 35%,
+    rgb(255 255 255 / 0.07) 48%,
+    transparent 62%
+  );
 }
 
-.plusBadge {
-  margin-bottom: 1.5rem;
-  display: inline-flex;
-  height: 2rem;
-  width: 2rem;
+.ctaIcon {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  height: 3.25rem;
+  width: 3.25rem;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
-  border-radius: 9999px;
-  background: rgba(255, 255, 255, 0.2);
-  font-size: 0.875rem;
-  font-weight: 700;
+  border-radius: 1.125rem;
+  background: rgb(255 255 255 / 0.16);
+  box-shadow:
+    0 1px 0 rgb(255 255 255 / 0.28) inset,
+    0 4px 14px rgb(0 0 0 / 0.12);
+}
+
+.ctaCopy {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  min-width: 0;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.35rem;
 }
 
 .ctaTitle {
   font-family: var(--font-display);
-  font-size: 1.125rem;
+  font-size: 1.2rem;
   font-weight: 700;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
 }
 
 .ctaSub {
-  margin-top: 0.25rem;
-  font-size: 0.875rem;
-  color: rgba(255, 255, 255, 0.85);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgb(255 255 255 / 0.9);
 }
 
 .row {

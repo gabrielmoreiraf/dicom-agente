@@ -36,7 +36,7 @@ export function HomePage() {
 
   return (
     <div className={styles.root}>
-      <div className={styles.introDesktopOnly}>
+      <div className={styles.pageIntro}>
         <HomeIntro />
       </div>
 
@@ -73,12 +73,14 @@ export function HomePage() {
         onClick={() => nav("/diagnostico/novo")}
         className={styles.cta}
       >
-        <span className={styles.ctaIconWrap}>
-          <Add sx={{ fontSize: 28 }} />
+        <span className={styles.ctaSheen} aria-hidden />
+        <span className={styles.ctaIcon} aria-hidden>
+          <Add sx={{ fontSize: 30 }} />
         </span>
-        <span className={styles.plusBadge}>+</span>
-        <span className={styles.ctaTitle}>Novo diagnóstico</span>
-        <span className={styles.ctaSub}>Iniciar registro de campo na comunidade</span>
+        <span className={styles.ctaCopy}>
+          <span className={styles.ctaTitle}>Novo diagnóstico</span>
+          <span className={styles.ctaSub}>Iniciar registro de campo na comunidade</span>
+        </span>
       </button>
 
       <div className={styles.row}>
