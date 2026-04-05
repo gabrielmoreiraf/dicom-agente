@@ -1,5 +1,11 @@
 import { useEffect, useLayoutEffect, useState } from "react";
-import { Navigate, useLocation, useNavigate, useParams } from "react-router-dom";
+import {
+  Navigate,
+  useLocation,
+  useNavigate,
+  useParams,
+  useSearchParams,
+} from "react-router-dom";
 import { FormProvider, useForm } from "react-hook-form";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { WizardStepRouter } from "@/features/diagnoses/wizard/WizardStepRouter";
@@ -38,6 +44,7 @@ function isNewDiagnosisPath(pathname: string) {
 export function DiagnosisWizardPage() {
   const { localId } = useParams<{ localId: string }>();
   const { pathname } = useLocation();
+  const [searchParams] = useSearchParams();
   const nav = useNavigate();
   const qc = useQueryClient();
   const online = useOnlineStatus();
@@ -119,7 +126,9 @@ export function DiagnosisWizardPage() {
     setStep((s) => Math.max(1, s - 1));
   };
 
-  const readOnly = record ? !canEditDiagnosis(record) : false;
+  const lockedReadOnly = record ? !canEditDiagnosis(record) : false;
+  const viewOnlyByChoice = searchParams.get("visualizar") === "1";
+  const readOnly = lockedReadOnly || viewOnlyByChoice;
 
   const wizardTitle = readOnly
     ? "Visualizar diagnóstico"
@@ -189,9 +198,11 @@ export function DiagnosisWizardPage() {
             <p className={styles.readSub}>
               Visualização completa — role a página para ver todas as seções.
             </p>
-            <p className={styles.warn}>
-              Limite de edições após conclusão atingido. Os dados abaixo são somente leitura.
-            </p>
+            {lockedReadOnly ? (
+              <p className={styles.warn}>
+                Limite de edições após conclusão atingido. Os dados abaixo são somente leitura.
+              </p>
+            ) : null}
           </header>
 
           <fieldset disabled className={`${styles.fieldsetRead} ${styles.fieldsetReadDisabled}`}>

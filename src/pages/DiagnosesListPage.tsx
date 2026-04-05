@@ -91,9 +91,17 @@ export function DiagnosesListPage() {
                     Excluir
                   </button>
                 )}
-                <Link to={`/diagnostico/${r.local_id}`} className={styles.linkEdit}>
-                  {editable ? "Editar" : "Ver"}
+                <Link
+                  to={`/diagnostico/${r.local_id}?visualizar=1`}
+                  className={styles.linkView}
+                >
+                  Visualizar
                 </Link>
+                {editable ? (
+                  <Link to={`/diagnostico/${r.local_id}`} className={styles.linkEdit}>
+                    Editar
+                  </Link>
+                ) : null}
                 {(r.status === "completed" ||
                   r.status === "sync_error" ||
                   r.status === "pending_sync" ||
