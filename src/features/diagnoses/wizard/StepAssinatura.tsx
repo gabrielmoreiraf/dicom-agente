@@ -1,13 +1,13 @@
 import { Controller, useFormContext } from "react-hook-form";
 import { SignatureCanvas } from "@/features/diagnoses/components/SignatureCanvas";
-import { wizardFieldClass as field } from "@/features/diagnoses/wizard/wizardFieldClass";
 import { formatIsoDateBR } from "@/lib/formatIsoDateBR";
 import type { DiagnosisFormValues } from "@/schemas/diagnosis";
 import wc from "./wizardCommon.module.css";
 
 export function StepAssinatura() {
-  const { register, control, watch } = useFormContext<DiagnosisFormValues>();
+  const { control, watch, clearErrors, formState } = useFormContext<DiagnosisFormValues>();
   const values = watch();
+  const signatureError = formState.errors.signature_data_url?.message;
 
   const dataLabel = values.data_coleta
     ? formatIsoDateBR(values.data_coleta) || values.data_coleta
@@ -17,24 +17,31 @@ export function StepAssinatura() {
     ["Comunidade", values.comunidade],
     ["Data", dataLabel],
     ["Pesquisador", values.pesquisador],
+    ["Responsável pelas informações", values.resp_nome],
   ].filter(([, v]) => v);
 
   return (
     <div className={wc.spaceY6}>
-      <label className={wc.block}>
-        <span className={wc.labelMd}>Nome do responsável pelas informações</span>
-        <input {...register("resp_nome")} className={field} />
-      </label>
-
       <div>
         <span className={wc.labelSignature}>Assinatura digital</span>
         <Controller
           name="signature_data_url"
           control={control}
           render={({ field: f }) => (
-            <SignatureCanvas value={f.value} onChange={f.onChange} />
+            <SignatureCanvas
+              value={f.value}
+              onChange={(v) => {
+                f.onChange(v);
+                if (v?.trim()) clearErrors("signature_data_url");
+              }}
+            />
           )}
         />
+        {signatureError ? (
+          <p className={wc.signatureFieldError} role="alert">
+            {signatureError}
+          </p>
+        ) : null}
       </div>
 
       <div className={wc.summaryCard}>

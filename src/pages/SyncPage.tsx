@@ -13,6 +13,7 @@ import styles from "./SyncPage.module.css";
 async function clearLocalOperationalData(): Promise<void> {
   await db.diagnoses.clear();
   await db.comunidades_cache.clear();
+  await db.catalog_meta.clear();
 }
 
 export function SyncPage() {

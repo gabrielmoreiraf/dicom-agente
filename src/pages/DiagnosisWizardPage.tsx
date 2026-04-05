@@ -29,8 +29,12 @@ import {
   queueDiagnosisSync,
   syncPendingDiagnoses,
 } from "@/features/diagnoses/services/syncService";
+import { useAuth } from "@/features/auth/AuthContext";
+import { useWizardAutosave } from "@/features/diagnoses/hooks/useWizardAutosave";
 import { applyZodIssuesToForm } from "@/utils/zodToRhf";
 import styles from "./DiagnosisWizardPage.module.css";
+
+const WIZARD_NOVO_SESSION_KEY = "diagnostico_wizard_novo_local_id";
 
 /** Após criar o primeiro rascunho a partir de `/diagnostico/novo`, restaura a etapa (troca de rota pode remontar o componente). */
 function wizardStepSessionKey(localId: string) {
@@ -48,6 +52,7 @@ export function DiagnosisWizardPage() {
   const nav = useNavigate();
   const qc = useQueryClient();
   const online = useOnlineStatus();
+  const { user } = useAuth();
   const [step, setStep] = useState(1);
   const [stepValidationMessage, setStepValidationMessage] = useState<string | null>(null);
   const [draftSaveOpen, setDraftSaveOpen] = useState(false);
@@ -65,7 +70,15 @@ export function DiagnosisWizardPage() {
     defaultValues: getDefaultDiagnosisValues(),
   });
 
-  const { reset, getValues, setError, clearErrors } = form;
+  const {
+    reset,
+    getValues,
+    setError,
+    clearErrors,
+    setValue,
+    watch,
+    formState: { isDirty },
+  } = form;
 
   useLayoutEffect(() => {
     if (!localId) return;
@@ -77,21 +90,69 @@ export function DiagnosisWizardPage() {
   }, [localId]);
 
   useEffect(() => {
-    if (record) reset(record.payload);
-  }, [record, reset]);
+    if (!record) return;
+    if (isDirty) return;
+    reset(record.payload);
+  }, [record, reset, isDirty]);
 
-  const persistNewDraftAndGoToUrl = async (nextStep: number, draftTitle?: string) => {
-    const id = await createDraft();
-    await savePayload(
-      id,
-      getValues(),
-      "draft",
-      draftTitle !== undefined ? { draftTitle } : undefined,
-    );
-    await qc.invalidateQueries({ queryKey: ["diagnoses"] });
-    sessionStorage.setItem(wizardStepSessionKey(id), String(nextStep));
-    nav(`/diagnostico/${id}`, { replace: true });
-  };
+  /** Cria `localId` imediatamente em `/diagnostico/novo` e redireciona — habilita autosave e evita dados só em memória. */
+  useEffect(() => {
+    if (!isNewWizard) return;
+
+    let cancelled = false;
+
+    void (async () => {
+      try {
+        let id = sessionStorage.getItem(WIZARD_NOVO_SESSION_KEY);
+        if (!id) {
+          id = await createDraft();
+          sessionStorage.setItem(WIZARD_NOVO_SESSION_KEY, id);
+        }
+        const row = await getDiagnosis(id);
+        if (!row) {
+          sessionStorage.removeItem(WIZARD_NOVO_SESSION_KEY);
+          if (!cancelled) {
+            window.alert("Não foi possível iniciar o rascunho. Tente novamente.");
+          }
+          return;
+        }
+        if (cancelled) return;
+        await qc.invalidateQueries({ queryKey: ["diagnoses"] });
+        if (cancelled) return;
+        nav(`/diagnostico/${id}`, { replace: true });
+      } catch (e) {
+        sessionStorage.removeItem(WIZARD_NOVO_SESSION_KEY);
+        if (!cancelled) {
+          window.alert(e instanceof Error ? e.message : "Não foi possível iniciar o rascunho.");
+        }
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [isNewWizard, nav, qc]);
+
+  useEffect(() => {
+    if (localId && !isNewDiagnosisPath(pathname)) {
+      sessionStorage.removeItem(WIZARD_NOVO_SESSION_KEY);
+    }
+  }, [localId, pathname]);
+
+  const lockedReadOnly = record ? !canEditDiagnosis(record) : false;
+  const viewOnlyByChoice = searchParams.get("visualizar") === "1";
+  const readOnly = lockedReadOnly || viewOnlyByChoice;
+
+  /** Depois do `useEffect` que faz `reset` condicional ao `record` / `isDirty`. */
+  const { autosaveError, persistAfterStepNav, syncBaselineFromForm } = useWizardAutosave({
+    form,
+    localId,
+    record,
+    readOnly,
+    debounceMs: 550,
+    queryClient: qc,
+    flushOnBeforeUnload: true,
+  });
 
   const goNext = async () => {
     const schema = stepSchemas[step - 1];
@@ -108,27 +169,54 @@ export function DiagnosisWizardPage() {
     clearErrors();
     setStepValidationMessage(null);
 
-    if (isNewWizard) {
-      try {
-        await persistNewDraftAndGoToUrl(step + 1);
-      } catch (e) {
-        window.alert(e instanceof Error ? e.message : "Não foi possível salvar.");
-      }
+    if (!localId) {
+      window.alert("Aguarde a preparação do rascunho no aparelho.");
+      return;
+    }
+
+    try {
+      await persistAfterStepNav();
+    } catch (e) {
+      window.alert(
+        e instanceof Error ? e.message : "Não foi possível salvar o rascunho ao avançar a etapa.",
+      );
       return;
     }
 
     setStep((s) => Math.min(8, s + 1));
   };
 
-  const goPrev = () => {
+  const goPrev = async () => {
     clearErrors();
     setStepValidationMessage(null);
+
+    if (!isNewWizard && localId) {
+      try {
+        await persistAfterStepNav();
+      } catch (e) {
+        window.alert(
+          e instanceof Error ? e.message : "Não foi possível salvar o rascunho ao voltar a etapa.",
+        );
+        return;
+      }
+    }
+
     setStep((s) => Math.max(1, s - 1));
   };
 
-  const lockedReadOnly = record ? !canEditDiagnosis(record) : false;
-  const viewOnlyByChoice = searchParams.get("visualizar") === "1";
-  const readOnly = lockedReadOnly || viewOnlyByChoice;
+  useEffect(() => {
+    if (readOnly) return;
+    const name = user?.name?.trim();
+    if (!name) return;
+    setValue("pesquisador", name, { shouldDirty: false, shouldValidate: false });
+    setValue("resp_nome", name, { shouldDirty: false, shouldValidate: false });
+  }, [readOnly, user?.name, record, setValue]);
+
+  const signatureWatch = watch("signature_data_url");
+  useEffect(() => {
+    if (step !== 8) return;
+    if (signatureWatch?.trim()) setStepValidationMessage(null);
+  }, [signatureWatch, step]);
 
   const wizardTitle = readOnly
     ? "Visualizar diagnóstico"
@@ -145,14 +233,12 @@ export function DiagnosisWizardPage() {
 
   const runSaveDraft = async (draftTitle: string) => {
     if (readOnly) return;
+    if (!localId) return;
     try {
-      if (isNewWizard) {
-        await persistNewDraftAndGoToUrl(step, draftTitle);
-      } else if (localId) {
-        await savePayload(localId, getValues(), "draft", { draftTitle });
-        await qc.invalidateQueries({ queryKey: ["diagnoses"] });
-        await qc.invalidateQueries({ queryKey: ["diagnosis", localId] });
-      }
+      await savePayload(localId, getValues(), "draft", { draftTitle });
+      await qc.invalidateQueries({ queryKey: ["diagnoses"] });
+      await qc.invalidateQueries({ queryKey: ["diagnosis", localId] });
+      syncBaselineFromForm();
     } catch (e) {
       window.alert(e instanceof Error ? e.message : "Não foi possível salvar.");
       throw e;
@@ -161,13 +247,19 @@ export function DiagnosisWizardPage() {
 
   const onFinish = async () => {
     if (!localId || readOnly) return;
+    setStepValidationMessage(null);
     const r = completeDiagnosisSchema.safeParse(getValues());
     if (!r.success) {
       applyZodIssuesToForm(r.error, setError);
+      const msgs = r.error.issues.map((i) => i.message).filter(Boolean);
+      setStepValidationMessage(
+        msgs.length > 0 ? msgs.join(" ") : "Corrija os campos obrigatórios antes de concluir.",
+      );
       return;
     }
     try {
       await savePayload(localId, r.data, "completed");
+      syncBaselineFromForm();
       await queueDiagnosisSync(localId);
       if (online) {
         await syncPendingDiagnoses();
@@ -180,6 +272,14 @@ export function DiagnosisWizardPage() {
   };
 
   if (!localId && !isNewWizard) return <Navigate to="/" replace />;
+
+  if (isNewWizard) {
+    return (
+      <div className={styles.loading} role="status" aria-live="polite">
+        Preparando rascunho…
+      </div>
+    );
+  }
 
   if (!isNewWizard && isLoading) {
     return <div className={styles.loading}>Carregando…</div>;
@@ -254,13 +354,19 @@ export function DiagnosisWizardPage() {
           </p>
         ) : null}
 
+        {autosaveError ? (
+          <p className={styles.validationBanner} role="alert">
+            Não foi possível salvar automaticamente: {autosaveError}
+          </p>
+        ) : null}
+
         <fieldset className={styles.fieldset}>
           <WizardStepRouter step={step} />
         </fieldset>
 
         <div className={styles.btnRow}>
           {step > 1 && (
-            <button type="button" onClick={goPrev} className={styles.btnGhost}>
+            <button type="button" onClick={() => void goPrev()} className={styles.btnGhost}>
               Voltar
             </button>
           )}

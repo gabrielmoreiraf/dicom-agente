@@ -9,6 +9,11 @@ const STUB: ComunidadeItem[] = Array.from({ length: 24 }, (_, i) => ({
   distrito: null,
 }));
 
+export const COMUNIDADES_CATALOG_META_ID = "comunidades_catalog" as const;
+
+/** Evita requisições paralelas duplicadas (login + hidratação + UI). */
+let refreshCatalogInFlight: Promise<RefreshComunidadesCatalogResult> | null = null;
+
 /** IDs gerados apenas no fallback local de demonstração — não confundir com dados da API. */
 function isStubCatalog(rows: ComunidadeItem[]): boolean {
   return rows.length > 0 && rows.every((r) => r.id.startsWith("pref-"));
@@ -22,6 +27,7 @@ async function clearStubCacheIfNeeded(): Promise<void> {
   const rows = await db.comunidades_cache.toArray();
   if (isStubCatalog(rows)) {
     await db.comunidades_cache.clear();
+    await db.catalog_meta.delete(COMUNIDADES_CATALOG_META_ID);
   }
 }
 
@@ -64,6 +70,92 @@ async function fetchFromNetwork(): Promise<ComunidadeItem[]> {
   return Array.isArray(data) ? data : [];
 }
 
+async function persistComunidadesCatalog(fresh: ComunidadeItem[]): Promise<string> {
+  const fetchedAt = new Date().toISOString();
+  await db.transaction("rw", db.comunidades_cache, db.catalog_meta, async () => {
+    await db.comunidades_cache.clear();
+    if (fresh.length > 0) {
+      await db.comunidades_cache.bulkPut(fresh);
+    }
+    await db.catalog_meta.put({
+      id: COMUNIDADES_CATALOG_META_ID,
+      catalog_fetched_at: fetchedAt,
+    });
+  });
+  return fetchedAt;
+}
+
+export type RefreshComunidadesCatalogResult =
+  | { ok: true; count: number; fetchedAt: string }
+  | { ok: false; reason: "offline" | "no_session"; message?: string }
+  | { ok: false; reason: "error"; message: string };
+
+/**
+ * Busca o catálogo na rede, grava em `comunidades_cache` e atualiza `catalog_fetched_at`.
+ * Chamadas concorrentes compartilham a mesma Promise (single-flight).
+ * Não lança em `offline` / sem sessão (retorna `ok: false`) — adequado para prefetch pós-login.
+ */
+export async function refreshComunidadesCatalog(): Promise<RefreshComunidadesCatalogResult> {
+  if (refreshCatalogInFlight) return refreshCatalogInFlight;
+
+  const run = (async (): Promise<RefreshComunidadesCatalogResult> => {
+    await clearStubCacheIfNeeded();
+
+    if (useAgentApiMock()) {
+      const fresh = await fetchFromNetwork();
+      const fetchedAt = await persistComunidadesCatalog(fresh);
+      return { ok: true, count: fresh.length, fetchedAt };
+    }
+
+    if (!navigator.onLine) {
+      return { ok: false, reason: "offline", message: "Sem conexão" };
+    }
+
+    const session = await getSession();
+    if (!session?.accessToken) {
+      return { ok: false, reason: "no_session", message: "Sessão não encontrada" };
+    }
+
+    try {
+      const fresh = await fetchFromNetwork();
+      const fetchedAt = await persistComunidadesCatalog(fresh);
+      return { ok: true, count: fresh.length, fetchedAt };
+    } catch (e) {
+      const message = e instanceof Error ? e.message : String(e);
+      return { ok: false, reason: "error", message };
+    }
+  })();
+
+  refreshCatalogInFlight = run;
+
+  try {
+    return await run;
+  } finally {
+    refreshCatalogInFlight = null;
+  }
+}
+
+/** ISO da última gravação bem-sucedida do catálogo, ou `null`. */
+export async function getComunidadesCatalogFetchedAt(): Promise<string | null> {
+  const row = await db.catalog_meta.get(COMUNIDADES_CATALOG_META_ID);
+  return row?.catalog_fetched_at ?? null;
+}
+
+/** Texto curto para UI (lista + botão atualizar). */
+export function formatComunidadesCatalogLabel(fetchedAtIso: string | null | undefined): string {
+  if (!fetchedAtIso?.trim()) {
+    return "Catálogo ainda não sincronizado";
+  }
+  const d = new Date(fetchedAtIso);
+  if (Number.isNaN(d.getTime())) {
+    return "Catálogo ainda não sincronizado";
+  }
+  return `Lista atualizada em ${d.toLocaleString("pt-BR", {
+    dateStyle: "short",
+    timeStyle: "short",
+  })}`;
+}
+
 /**
  * Lista de comunidades para o passo 1 — **offline-first**:
  * com API real, não usa mais fallback silencioso de “comunidades exemplo” (evita confundir com cadastro da prefeitura).
@@ -76,26 +168,22 @@ export async function fetchComunidades(): Promise<ComunidadeItem[]> {
   if (!navigator.onLine) {
     if (cached.length > 0) return cached;
     if (useAgentApiMock()) {
-      await db.comunidades_cache.bulkPut(STUB);
-      return STUB;
+      const fresh = STUB;
+      await persistComunidadesCatalog(fresh);
+      return fresh;
     }
     throw new Error("Sem conexão e sem cache de comunidades. Conecte-se e abra o diagnóstico novamente.");
   }
 
   if (useAgentApiMock()) {
-    await db.comunidades_cache.clear();
-    await db.comunidades_cache.bulkPut(STUB);
-    return STUB;
+    const fresh = await fetchFromNetwork();
+    await persistComunidadesCatalog(fresh);
+    return fresh;
   }
 
   try {
     const fresh = await fetchFromNetwork();
-    await db.transaction("rw", db.comunidades_cache, async () => {
-      await db.comunidades_cache.clear();
-      if (fresh.length > 0) {
-        await db.comunidades_cache.bulkPut(fresh);
-      }
-    });
+    await persistComunidadesCatalog(fresh);
     return fresh;
   } catch (e) {
     if (cached.length > 0 && !isStubCatalog(cached)) {

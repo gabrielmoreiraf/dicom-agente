@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { isIsoDateYmdFuture } from "@/lib/isoDateYmdFuture";
 
 /**
  * Schemas por etapa + merge (`diagnosisFormSchema`). Tipos de domínio em `@/domain/diagnosis`.
@@ -10,10 +11,19 @@ const n = z.coerce.number().int().min(0, "Deve ser ≥ 0");
 
 const simNao = z.enum(["sim", "nao"]);
 
+const msgDataFutura = "A data não pode ser futura";
+
+const zDataYmdOpcionalNaoFutura = z.string().refine((s) => !s.trim() || !isIsoDateYmdFuture(s), {
+  message: msgDataFutura,
+});
+
 export const stepIdentificationSchema = z.object({
   comunidade: z.string().min(1, "Informe a comunidade"),
   distrito: z.string().optional(),
-  data_coleta: z.string().min(1, "Informe a data da coleta"),
+  data_coleta: z
+    .string()
+    .min(1, "Informe a data da coleta")
+    .refine((s) => !isIsoDateYmdFuture(s), { message: msgDataFutura }),
   observacoes: z.string().optional(),
   pesquisador: z.string().min(1, "Informe o pesquisador responsável"),
   gps: z.string().optional(),
@@ -82,31 +92,31 @@ export const stepAgriculturaSchema = z.object({
 const membroFiscalSchema = z.object({
   nome: z.string().optional(),
   telefone: z.string().optional(),
-  nasc: z.string().optional(),
+  nasc: zDataYmdOpcionalNaoFutura,
 });
 
 export const stepAssociacaoSchema = z.object({
   assoc_nome: z.string().optional(),
-  assoc_fundacao: z.string().optional(),
-  assoc_diretoria: z.string().optional(),
+  assoc_fundacao: zDataYmdOpcionalNaoFutura,
+  assoc_diretoria: zDataYmdOpcionalNaoFutura,
   dir_p_nome: z.string().optional(),
   dir_p_tel: z.string().optional(),
-  dir_p_nasc: z.string().optional(),
+  dir_p_nasc: zDataYmdOpcionalNaoFutura,
   dir_vp_nome: z.string().optional(),
   dir_vp_tel: z.string().optional(),
-  dir_vp_nasc: z.string().optional(),
+  dir_vp_nasc: zDataYmdOpcionalNaoFutura,
   dir_t_nome: z.string().optional(),
   dir_t_tel: z.string().optional(),
-  dir_t_nasc: z.string().optional(),
+  dir_t_nasc: zDataYmdOpcionalNaoFutura,
   dir_t2_nome: z.string().optional(),
   dir_t2_tel: z.string().optional(),
-  dir_t2_nasc: z.string().optional(),
+  dir_t2_nasc: zDataYmdOpcionalNaoFutura,
   dir_s_nome: z.string().optional(),
   dir_s_tel: z.string().optional(),
-  dir_s_nasc: z.string().optional(),
+  dir_s_nasc: zDataYmdOpcionalNaoFutura,
   dir_s2_nome: z.string().optional(),
   dir_s2_tel: z.string().optional(),
-  dir_s2_nasc: z.string().optional(),
+  dir_s2_nasc: zDataYmdOpcionalNaoFutura,
   fiscal: z.array(membroFiscalSchema).default([]),
 });
 
@@ -150,22 +160,24 @@ export const STEP_LABELS = [
 ] as const;
 
 /** Validação para conclusão (assinatura obrigatória + canvas) */
-export const completeDiagnosisSchema = diagnosisFormSchema.superRefine((data, ctx) => {
-  if (!data.resp_nome?.trim()) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Informe o responsável",
-      path: ["resp_nome"],
-    });
-  }
-  if (!data.signature_data_url?.trim()) {
-    ctx.addIssue({
-      code: z.ZodIssueCode.custom,
-      message: "Assinatura obrigatória para concluir",
-      path: ["signature_data_url"],
-    });
-  }
-});
+export const completeDiagnosisSchema = diagnosisFormSchema.superRefine(
+  (data, ctx) => {
+    if (!data.resp_nome?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Informe o responsável",
+        path: ["resp_nome"],
+      });
+    }
+    if (!data.signature_data_url?.trim()) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "É necessário assinar no quadro de assinatura digital acima para concluir.",
+        path: ["signature_data_url"],
+      });
+    }
+  },
+);
 
 export function getDefaultDiagnosisValues(): DiagnosisFormValues {
   return {

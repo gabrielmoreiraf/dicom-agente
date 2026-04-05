@@ -4,6 +4,12 @@ import type { ComunidadeItem } from "@/domain/comunidades";
 
 export type { DiagnosisRecord, DiagnosisStatus } from "@/domain/diagnosis";
 
+/** Metadados do cache do catálogo de comunidades (um registro fixo). */
+export interface CatalogMetaRecord {
+  id: "comunidades_catalog";
+  catalog_fetched_at: string | null;
+}
+
 /**
  * IndexedDB via Dexie — fonte de verdade local (offline-first).
  * v2: soft delete (`deleted_at`), `sync_started_at`, catálogo de comunidades em cache.
@@ -26,6 +32,7 @@ export class DiagnosticoDB extends Dexie {
   diagnoses!: Table<DiagnosisRecord, string>;
   session!: Table<SessionRecord, string>;
   comunidades_cache!: Table<ComunidadeItem, string>;
+  catalog_meta!: Table<CatalogMetaRecord, string>;
 
   constructor() {
     super("diagnostico_comunidades_v1");
@@ -86,6 +93,14 @@ export class DiagnosticoDB extends Dexie {
             }
           });
       });
+    /** v6: metadados do catálogo de comunidades (`catalog_fetched_at`). */
+    this.version(6).stores({
+      diagnoses:
+        "local_id, status, server_id, updated_at, deleted_at, sync_started_at",
+      session: "id",
+      comunidades_cache: "id, nome",
+      catalog_meta: "id",
+    });
   }
 }
 
