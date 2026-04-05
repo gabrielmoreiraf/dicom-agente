@@ -1,10 +1,20 @@
-import { useQuery } from "@tanstack/react-query";
-import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useLiveQuery } from "dexie-react-hooks";
+import { useEffect, useState } from "react";
 import { Controller, useFormContext } from "react-hook-form";
 import * as Select from "@radix-ui/react-select";
+import EditOutlined from "@mui/icons-material/EditOutlined";
 import KeyboardArrowDown from "@mui/icons-material/KeyboardArrowDown";
+import PersonOutlined from "@mui/icons-material/PersonOutlined";
+import { db } from "@/db";
 import { useAuth } from "@/features/auth/AuthContext";
-import { fetchComunidades } from "@/features/diagnoses/services/comunidades";
+import {
+  COMUNIDADES_CATALOG_META_ID,
+  fetchComunidades,
+  formatComunidadesCatalogLabel,
+  refreshComunidadesCatalog,
+} from "@/features/diagnoses/services/comunidades";
+import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import type { DiagnosisFormValues } from "@/schemas/diagnosis";
 import f from "@/styles/forms.module.css";
 import radixSelect from "@/components/ui/RadixSelect.module.css";
@@ -21,7 +31,21 @@ function coletaEndMonth(): Date {
 export function StepIdentification() {
   const { register, watch, setValue, control } = useFormContext<DiagnosisFormValues>();
   const comunidadeNome = watch("comunidade");
-  const { accessToken, loading: authLoading } = useAuth();
+  const pesquisador = watch("pesquisador") ?? "";
+  const { accessToken, loading: authLoading, user } = useAuth();
+  const qc = useQueryClient();
+  const online = useOnlineStatus();
+  const sessionName = user?.name?.trim() ?? "";
+  const namesMatch = sessionName !== "" && pesquisador.trim() === sessionName;
+  const showPesquisadorEdit =
+    sessionName !== "" && pesquisador.trim() !== "" && pesquisador.trim() !== sessionName;
+  const [pesquisadorEditing, setPesquisadorEditing] = useState(false);
+  const [catalogRefreshing, setCatalogRefreshing] = useState(false);
+
+  const catalogMetaRow = useLiveQuery(
+    () => db.catalog_meta.get(COMUNIDADES_CATALOG_META_ID),
+    [],
+  );
 
   const {
     data: comunidades,
@@ -48,6 +72,10 @@ export function StepIdentification() {
     setValue("distrito", d ?? "");
   }, [comunidadeNome, comunidades, setValue]);
 
+  useEffect(() => {
+    if (namesMatch) setPesquisadorEditing(false);
+  }, [namesMatch]);
+
   const selectDisabled = isLoading || authLoading;
 
   const placeholderLabel = selectDisabled
@@ -56,10 +84,39 @@ export function StepIdentification() {
       ? "Nenhuma comunidade ativa"
       : "Selecione…";
 
+  const onRefreshCatalog = async () => {
+    if (!online || !accessToken || catalogRefreshing) return;
+    setCatalogRefreshing(true);
+    try {
+      const r = await refreshComunidadesCatalog();
+      if (!r.ok && r.reason === "error") {
+        window.alert(r.message ?? "Não foi possível atualizar o catálogo.");
+      }
+      await qc.invalidateQueries({ queryKey: ["comunidades"] });
+    } finally {
+      setCatalogRefreshing(false);
+    }
+  };
+
   return (
     <div className={`${wc.gridMd2}`}>
       <label className={`${wc.spanMd2} ${wc.block}`}>
         <span className={wizardLabelClass}>Comunidade</span>
+        <div className={wc.catalogToolbar}>
+          <p className={wc.catalogMeta}>
+            {formatComunidadesCatalogLabel(catalogMetaRow?.catalog_fetched_at ?? null)}
+          </p>
+          {online && accessToken && !authLoading ? (
+            <button
+              type="button"
+              className={wc.catalogRefreshBtn}
+              disabled={catalogRefreshing || isLoading}
+              onClick={() => void onRefreshCatalog()}
+            >
+              {catalogRefreshing ? "Atualizando…" : "Atualizar comunidades"}
+            </button>
+          ) : null}
+        </div>
         {isError ? (
           <div className={wc.errorBox}>
             <p>{error instanceof Error ? error.message : "Não foi possível carregar as comunidades."}</p>
@@ -125,10 +182,50 @@ export function StepIdentification() {
           )}
         />
       </label>
-      <label className={`${wc.spanMd2} ${wc.block}`}>
+      <div className={`${wc.spanMd2} ${wc.block}`}>
         <span className={wizardLabelClass}>Pesquisador responsável</span>
-        <input {...register("pesquisador")} className={wizardFieldClass} />
-      </label>
+        {pesquisadorEditing ? (
+          <Controller
+            name="pesquisador"
+            control={control}
+            render={({ field }) => (
+              <input
+                {...field}
+                autoFocus
+                className={wizardFieldClass}
+                aria-label="Editar pesquisador responsável"
+                onBlur={(e) => {
+                  const v = e.target.value.trim();
+                  field.onChange(v);
+                  field.onBlur();
+                  setPesquisadorEditing(false);
+                }}
+              />
+            )}
+          />
+        ) : (
+          <div className={wc.pesquisadorShell}>
+            <span className={wc.pesquisadorIconWrap} aria-hidden>
+              <PersonOutlined sx={{ fontSize: 22 }} />
+            </span>
+            <div className={wc.pesquisadorRow}>
+              <span className={wc.pesquisadorValue}>
+                {pesquisador.trim() || sessionName || "—"}
+              </span>
+              {showPesquisadorEdit ? (
+                <button
+                  type="button"
+                  className={wc.pesquisadorEditBtn}
+                  aria-label="Editar pesquisador responsável"
+                  onClick={() => setPesquisadorEditing(true)}
+                >
+                  <EditOutlined sx={{ fontSize: 20 }} />
+                </button>
+              ) : null}
+            </div>
+          </div>
+        )}
+      </div>
       <label className={`${wc.spanMd2} ${wc.block}`}>
         <span className={wizardLabelClass}>Observações</span>
         <textarea
