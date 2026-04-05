@@ -1,0 +1,347 @@
+/** Layouts e blocos reutilizados nos passos do wizard. */
+
+.gridMd2 {
+  display: grid;
+  gap: 1.125rem;
+}
+
+@media (min-width: 768px) {
+  .gridMd2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.gridSm2 {
+  display: grid;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .gridSm2 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.gridSm3 {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .gridSm3 {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .spanSm2 {
+    grid-column: span 2;
+  }
+}
+
+.spanMd2 {
+  grid-column: span 1;
+}
+
+@media (min-width: 768px) {
+  .spanMd2 {
+    grid-column: span 2;
+  }
+}
+
+.block {
+  display: block;
+}
+
+.labelSm {
+  margin-bottom: 0.25rem;
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--neutral-800);
+}
+
+.labelXs {
+  margin-bottom: 0.25rem;
+  display: block;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.labelMd {
+  margin-bottom: 0.25rem;
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.labelSignature {
+  margin-bottom: 0.5rem;
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.maxWmd {
+  max-width: 28rem;
+}
+
+.stack4 > * + * {
+  margin-top: 1rem;
+}
+
+.stack6 > * + * {
+  margin-top: 1.5rem;
+}
+
+.spaceY6 > * + * {
+  margin-top: 1.5rem;
+}
+
+.spaceY4 > * + * {
+  margin-top: 1rem;
+}
+
+.totalCard {
+  border-radius: 0.75rem;
+  border: 2px solid var(--color-primary);
+  background: var(--color-primary-soft);
+  padding: 1rem;
+  text-align: center;
+}
+
+.totalLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  color: var(--neutral-600);
+}
+
+.totalValue {
+  font-family: var(--font-display);
+  font-size: 1.875rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.section {
+  border-radius: 0.75rem;
+  border: 1px solid var(--neutral-200);
+  background: #fff;
+  padding: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.sectionTitle {
+  margin-bottom: 0.75rem;
+  border-bottom: 1px solid var(--color-accent-soft);
+  padding-bottom: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.sectionTitlePlain {
+  margin-bottom: 0.75rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.sectionGrid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+@media (min-width: 640px) {
+  .sectionGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+.radioRow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.radioLabel {
+  display: flex;
+  flex: 1;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.5rem;
+  border: 2px solid var(--neutral-200);
+  padding: 0.75rem;
+}
+
+.radioLabel:has(input:checked) {
+  border-color: var(--color-primary);
+  background: var(--color-primary-soft);
+}
+
+.radioLabel input {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.radioText {
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.prompt {
+  margin-bottom: 0.5rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.promptSpaced {
+  margin-bottom: 0.5rem;
+  margin-top: 1rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.errorBox {
+  margin-bottom: 0.5rem;
+  border-radius: 0.5rem;
+  border: 1px solid var(--red-200);
+  background: var(--red-50);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  color: var(--red-900);
+}
+
+.retryBtn {
+  margin-top: 0.5rem;
+  border: 0;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--red-800);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.personBlock {
+  border-radius: 0.75rem;
+  border: 1px solid var(--neutral-200);
+  background: var(--neutral-50);
+  padding: 1rem;
+}
+
+.personTitle {
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 700;
+  color: var(--color-primary);
+}
+
+.assocHeading {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+.fiscalCard {
+  position: relative;
+  border-radius: 0.5rem;
+  border: 1px solid var(--neutral-200);
+  padding: 0.75rem;
+}
+
+.removeBtn {
+  position: absolute;
+  right: 0.5rem;
+  top: 0.5rem;
+  border: 0;
+  background: transparent;
+  font-size: 1.125rem;
+  font-weight: 700;
+  color: var(--red-600);
+  cursor: pointer;
+}
+
+.addMemberBtn {
+  border-radius: 0.5rem;
+  border: 0;
+  background: var(--color-accent-soft);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-accent);
+  cursor: pointer;
+}
+
+.fiscalHeader {
+  margin-bottom: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.fiscalTitle {
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.whiteCard {
+  border-radius: 0.75rem;
+  border: 1px solid var(--neutral-200);
+  background: #fff;
+  padding: 1rem;
+}
+
+.summaryCard {
+  border-radius: 0.75rem;
+  border: 1px solid var(--neutral-200);
+  background: var(--neutral-50);
+  padding: 1rem;
+}
+
+.summaryTitle {
+  margin-bottom: 0.5rem;
+  font-family: var(--font-display);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.dl {
+  display: grid;
+  gap: 0.5rem;
+  font-size: 0.875rem;
+}
+
+.dlRow {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  border-bottom: 1px solid var(--neutral-200);
+  padding: 0.25rem 0;
+}
+
+.dlRow:last-child {
+  border-bottom: 0;
+}
+
+.dt {
+  color: var(--neutral-500);
+}
+
+.dd {
+  font-weight: 500;
+  color: var(--neutral-900);
+}

@@ -1,0 +1,111 @@
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  type ReactNode,
+} from "react";
+import { loginRequest, changePasswordRequest } from "@/services/authApi";
+import type { AuthUser } from "@/types/auth";
+import type { ChangePasswordRequest } from "@/types/auth";
+import {
+  getSession,
+  logout as logoutDb,
+  saveSession,
+  updateSessionUser,
+} from "./session";
+
+type AuthState = {
+  user: AuthUser | null;
+  accessToken: string | null;
+  loading: boolean;
+  mustChangePassword: boolean;
+  login: (cpf: string, password: string) => Promise<void>;
+  logout: () => Promise<void>;
+  completePasswordChange: (body: ChangePasswordRequest) => Promise<void>;
+};
+
+const AuthContext = createContext<AuthState | null>(null);
+
+export function AuthProvider({ children }: { children: ReactNode }) {
+  const [user, setUserState] = useState<AuthUser | null>(null);
+  const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    void (async () => {
+      const s = await getSession();
+      if (s) {
+        setUserState(s.user);
+        setAccessToken(s.accessToken);
+      }
+      setLoading(false);
+    })();
+  }, []);
+
+  const login = useCallback(async (cpf: string, password: string) => {
+    const normalized = cpf.replace(/\D/g, "");
+    const res = await loginRequest({
+      cpf: normalized,
+      password: password.trim(),
+    });
+    const sessionUser = res.user;
+    await saveSession({
+      accessToken: res.accessToken,
+      cpf: sessionUser.cpf,
+      user: sessionUser,
+    });
+    setAccessToken(res.accessToken);
+    setUserState(sessionUser);
+  }, []);
+
+  const logout = useCallback(async () => {
+    await logoutDb();
+    setAccessToken(null);
+    setUserState(null);
+  }, []);
+
+  const completePasswordChange = useCallback(
+    async (body: ChangePasswordRequest) => {
+      const token = accessToken;
+      if (!token) throw new Error("Sessão inválida");
+      const updated = await changePasswordRequest(token, body);
+      await updateSessionUser(updated);
+      setUserState(updated);
+    },
+    [accessToken],
+  );
+
+  const mustChangePassword = !!(user?.mustChangePassword);
+
+  const value = useMemo<AuthState>(
+    () => ({
+      user,
+      accessToken,
+      loading,
+      mustChangePassword,
+      login,
+      logout,
+      completePasswordChange,
+    }),
+    [
+      user,
+      accessToken,
+      loading,
+      mustChangePassword,
+      login,
+      logout,
+      completePasswordChange,
+    ],
+  );
+
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+}
+
+export function useAuth() {
+  const ctx = useContext(AuthContext);
+  if (!ctx) throw new Error("useAuth outside AuthProvider");
+  return ctx;
+}

@@ -1,0 +1,240 @@
+.root {
+  display: flex;
+  min-height: 100dvh;
+  flex-direction: column;
+  background: #fff;
+  padding: max(2rem, env(safe-area-inset-top))
+    max(1.25rem, env(safe-area-inset-right))
+    max(1.5rem, env(safe-area-inset-bottom))
+    max(1.25rem, env(safe-area-inset-left));
+}
+
+.inner {
+  margin-left: auto;
+  margin-right: auto;
+  display: flex;
+  width: 100%;
+  max-width: 28rem;
+  flex: 1;
+  flex-direction: column;
+}
+
+.center {
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 0;
+}
+
+.header {
+  text-align: center;
+}
+
+.brandLogo {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  height: auto;
+  max-width: min(100%, 26rem);
+  object-fit: contain;
+}
+
+@media (min-width: 640px) {
+  .brandLogo {
+    max-width: min(100%, 28rem);
+  }
+}
+
+.form {
+  margin-top: -50px;
+}
+
+.form > * + * {
+  margin-top: 1.25rem;
+}
+
+.label {
+  display: block;
+}
+
+.labelText {
+  margin-bottom: 0.375rem;
+  display: block;
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--neutral-700);
+}
+
+.input {
+  min-height: var(--min-touch);
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 0;
+  background: #f0f0f0;
+  padding: 0.75rem;
+  font-size: 1rem;
+  color: var(--neutral-900);
+  outline: none;
+}
+
+.input::placeholder {
+  color: var(--neutral-500);
+}
+
+.input:focus {
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.3);
+}
+
+.error {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--red-600);
+}
+
+.alert {
+  font-size: 0.875rem;
+  color: var(--red-600);
+}
+
+.submit {
+  margin-top: 0.5rem;
+  display: flex;
+  min-height: var(--min-touch);
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  border-radius: 0.75rem;
+  border: 0;
+  background: var(--color-primary-dark);
+  padding: 0.875rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #fff;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+
+.submit:hover:not(:disabled) {
+  background: var(--color-primary);
+}
+
+.submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.note {
+  flex-shrink: 0;
+  margin-top: 0.875rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--neutral-500);
+}
+
+.privacyLink {
+  color: var(--color-primary);
+  text-underline-offset: 2px;
+}
+
+.privacyLink:hover {
+  text-decoration: underline;
+}
+
+.footer {
+  flex-shrink: 0;
+  margin-top: 2rem;
+  display: flex;
+  justify-content: center;
+  padding-bottom: 1.5rem;
+  padding-top: 1rem;
+}
+
+.logo {
+  height: auto;
+  max-height: 6.75rem;
+  width: 100%;
+  max-width: 300px;
+  object-fit: contain;
+}
+
+@media (min-width: 640px) {
+  .logo {
+    max-height: 7.75rem;
+  }
+}
+
+.passwordOverrides {
+  border-radius: 0.75rem !important;
+  border: 0 !important;
+  background: #f0f0f0 !important;
+  padding-top: 0.75rem !important;
+  padding-bottom: 0.75rem !important;
+  padding-left: 0.75rem !important;
+  padding-right: 2.75rem !important;
+  font-size: 1rem !important;
+  box-shadow: none !important;
+}
+
+.passwordOverrides:focus {
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.3) !important;
+}
+
+/* Desktop: fit login in one viewport without scroll (mobile unchanged) */
+@media (min-width: 1024px) {
+  .root {
+    min-height: 100dvh;
+    max-height: 100dvh;
+    overflow: hidden;
+    padding-top: max(1rem, env(safe-area-inset-top));
+    padding-left: max(1.25rem, env(safe-area-inset-left));
+    padding-right: max(1.25rem, env(safe-area-inset-right));
+    box-sizing: border-box;
+  }
+
+  .inner {
+    min-height: 0;
+    max-height: 100%;
+  }
+
+  .center {
+    flex: 1 1 0;
+    min-height: 0;
+    justify-content: center;
+  }
+
+  .header {
+    line-height: 0;
+  }
+
+  .brandLogo {
+    max-width: min(100%, 24rem);
+    max-height: min(38vh, 280px);
+    width: auto;
+  }
+
+  .form {
+    margin-top: -0.85rem;
+  }
+
+  .note {
+    margin-top: 0.25rem;
+  }
+
+  .footer {
+    margin-top: 0.5rem;
+    padding-top: 0.25rem;
+    padding-bottom: 0.5rem;
+  }
+
+  .logo {
+    max-height: 5.25rem;
+    max-width: 300px;
+  }
+}

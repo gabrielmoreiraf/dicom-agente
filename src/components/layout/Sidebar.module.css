@@ -1,0 +1,243 @@
+/**
+ * Desktop: aside position fixed + 16rem — fora do fluxo do miolo (não “estica” com /sync).
+ */
+.aside {
+  display: none;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  flex-direction: column;
+  overflow: hidden;
+  overflow-wrap: anywhere;
+  contain: layout;
+  background: var(--color-primary);
+  color: #fff;
+}
+
+@media (min-width: 768px) {
+  .aside {
+    position: fixed;
+    left: 0;
+    top: 0;
+    z-index: 30;
+    display: flex;
+    width: 16rem;
+    min-width: 16rem;
+    max-width: 16rem;
+    height: 100dvh;
+    min-height: 100dvh;
+    overflow: hidden;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    scrollbar-color: var(--scrollbar-thumb-on-dark) var(--scrollbar-track-on-dark);
+  }
+}
+
+/* Thumb claro sobre fundo verde (sobrescreve o * global) */
+.aside::-webkit-scrollbar-track {
+  background: var(--scrollbar-track-on-dark);
+}
+
+.aside::-webkit-scrollbar-thumb {
+  background-color: var(--scrollbar-thumb-on-dark);
+}
+
+.aside::-webkit-scrollbar-thumb:hover {
+  background-color: var(--scrollbar-thumb-on-dark-hover);
+}
+
+.aside::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-on-dark-hover);
+}
+
+.brand {
+  min-width: 0;
+  max-width: 100%;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.75rem 0.625rem 0.875rem;
+}
+
+.brandRow {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  text-align: center;
+}
+
+.brandLogo {
+  display: block;
+  box-sizing: border-box;
+  width: 100%;
+  min-width: 0;
+  height: auto;
+  max-height: 100px;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.brandKicker {
+  margin: 0;
+  max-width: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  line-height: 1.2;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.88);
+}
+
+.nav {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  flex: 1;
+  flex-direction: column;
+  gap: 0.125rem;
+  padding: 0.5rem;
+}
+
+.link {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+  overflow: hidden;
+  border-radius: 0.5rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.9);
+  text-decoration: none;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.link:hover {
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.linkActive {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.footer {
+  min-width: 0;
+  max-width: 100%;
+  border-top: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 0.75rem;
+}
+
+.statusCard {
+  margin-bottom: 0.75rem;
+  max-width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.75rem;
+  backdrop-filter: blur(8px);
+}
+
+.statusRow {
+  display: flex;
+  min-width: 0;
+  max-width: 100%;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.statusIconWrap {
+  position: relative;
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 9999px;
+}
+
+.statusIconWrapOnline {
+  background: rgba(110, 231, 183, 0.3);
+}
+
+.statusIconWrapOffline {
+  background: rgba(252, 211, 77, 0.2);
+}
+
+.ping {
+  position: absolute;
+  inset: 0.25rem;
+  border-radius: 9999px;
+  background: rgba(167, 243, 208, 0.4);
+  animation: dc-ping 1s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+.dot {
+  position: relative;
+  z-index: 10;
+  height: 0.625rem;
+  width: 0.625rem;
+  border-radius: 9999px;
+}
+
+.dotOnline {
+  background: var(--emerald-200);
+  box-shadow: 0 0 10px #a7f3d0;
+}
+
+.dotOffline {
+  background: var(--amber-300);
+}
+
+.statusText {
+  min-width: 0;
+}
+
+.statusLine1 {
+  font-size: 0.875rem;
+  font-weight: 700;
+}
+
+.statusLine2 {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.75);
+}
+
+.userName {
+  margin-bottom: 0.25rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+}
+
+.userCpf {
+  margin-bottom: 0.5rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 0.75rem;
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.btnLogout {
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  background: rgba(255, 255, 255, 0.1);
+  padding: 0.625rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btnLogout:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

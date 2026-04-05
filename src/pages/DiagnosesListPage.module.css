@@ -1,0 +1,139 @@
+.root > * + * {
+  margin-top: 1.25rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+.sub {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--neutral-600);
+}
+
+.info {
+  border-radius: 1rem;
+  border: 1px solid rgba(229, 229, 229, 0.9);
+  background: #fff;
+  padding: 1rem;
+  font-size: 0.875rem;
+  color: var(--neutral-600);
+  box-shadow: var(--shadow-sm);
+}
+
+.list > * + * {
+  margin-top: 0.75rem;
+}
+
+.card {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  border-radius: 1rem;
+  border: 1px solid rgba(229, 229, 229, 0.9);
+  background: #fff;
+  padding: 1rem;
+  box-shadow: var(--shadow-stitch);
+}
+
+@media (min-width: 768px) {
+  .card {
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+  }
+}
+
+.cardTitle {
+  font-weight: 600;
+  color: var(--neutral-900);
+}
+
+.cardMeta {
+  font-size: 0.875rem;
+  color: var(--neutral-600);
+}
+
+.badge {
+  margin-top: 0.25rem;
+  display: inline-block;
+  border-radius: 9999px;
+  background: var(--neutral-100);
+  padding: 0.125rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--neutral-700);
+}
+
+.meta {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--neutral-500);
+}
+
+.err {
+  margin-top: 0.25rem;
+  font-size: 0.75rem;
+  color: var(--red-600);
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.btnDelete {
+  border-radius: 0.5rem;
+  border: 1px solid var(--red-200);
+  background: #fff;
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--red-800);
+  cursor: pointer;
+}
+
+.btnDelete:hover:not(:disabled) {
+  background: var(--red-50);
+}
+
+.btnDelete:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.linkEdit {
+  border-radius: 0.5rem;
+  background: var(--color-primary-soft);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--color-primary-dark);
+  text-decoration: none;
+}
+
+.btnSync {
+  border-radius: 0.5rem;
+  border: 0;
+  background: var(--color-accent);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+}
+
+.btnSync:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.empty {
+  text-align: center;
+  color: var(--neutral-600);
+}

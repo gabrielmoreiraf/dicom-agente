@@ -1,0 +1,27 @@
+.label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.labelText {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--neutral-700);
+}
+
+.input {
+  min-height: var(--min-touch);
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--neutral-300);
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  color: var(--neutral-900);
+  outline: none;
+}
+
+.input:focus {
+  border-color: var(--color-primary);
+  box-shadow: 0 0 0 2px rgba(46, 125, 50, 0.2);
+}

@@ -1,0 +1,213 @@
+.root {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.root > * + * {
+  margin-top: 1.5rem;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--neutral-900);
+}
+
+.sub {
+  margin-top: 0.25rem;
+  font-size: 0.875rem;
+  color: var(--neutral-600);
+}
+
+.grid2 {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.card {
+  border-radius: 1rem;
+  border: 1px solid rgba(229, 229, 229, 0.9);
+  background: #fff;
+  padding: 1.25rem;
+  text-align: center;
+  box-shadow: var(--shadow-stitch);
+}
+
+.iconWrap {
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 0.5rem;
+  display: flex;
+  height: 2.5rem;
+  width: 2.5rem;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.75rem;
+}
+
+.iconPrimary {
+  background: var(--color-primary-soft);
+  color: var(--color-primary);
+}
+
+.iconAmber {
+  background: var(--amber-50);
+  color: var(--amber-700);
+}
+
+.bigNum {
+  font-size: 1.875rem;
+  font-weight: 700;
+}
+
+.bigNumPrimary {
+  color: var(--color-primary);
+}
+
+.bigNumAmber {
+  color: var(--amber-600);
+}
+
+.cardLabel {
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--neutral-500);
+}
+
+.btnSync {
+  min-height: var(--min-touch);
+  width: 100%;
+  border-radius: 1rem;
+  border: 0;
+  background: var(--color-primary);
+  padding: 0.875rem;
+  font-weight: 600;
+  color: #fff;
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  cursor: pointer;
+}
+
+.btnSync:hover:not(:disabled) {
+  background: var(--color-primary-dark);
+}
+
+.btnSync:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.result {
+  font-size: 0.875rem;
+  color: var(--neutral-700);
+}
+
+.sectionAmber {
+  border-radius: 0.75rem;
+  border: 1px solid var(--amber-200);
+  background: rgba(255, 251, 235, 0.4);
+  padding: 1rem;
+}
+
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 600;
+  color: var(--neutral-900);
+}
+
+.sectionText {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--neutral-700);
+}
+
+.btnDraft {
+  margin-top: 0.75rem;
+  min-height: var(--min-touch);
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--amber-300);
+  background: #fff;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--amber-950);
+  cursor: pointer;
+}
+
+.btnDraft:hover:not(:disabled) {
+  background: rgba(254, 243, 199, 0.8);
+}
+
+.btnDraft:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.feedback {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--neutral-700);
+}
+
+.sectionRed {
+  border-radius: 0.75rem;
+  border: 1px solid var(--red-200);
+  background: rgba(254, 242, 242, 0.5);
+  padding: 1rem;
+}
+
+.labelBlock {
+  margin-top: 0.75rem;
+  display: block;
+  font-size: 0.875rem;
+  color: var(--neutral-700);
+}
+
+.mono {
+  font-family: ui-monospace, monospace;
+  font-weight: 600;
+}
+
+.input {
+  margin-top: 0.25rem;
+  min-height: var(--min-touch);
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 1px solid var(--neutral-300);
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+}
+
+.btnWipe {
+  margin-top: 0.75rem;
+  min-height: var(--min-touch);
+  width: 100%;
+  border-radius: 0.75rem;
+  border: 1px solid var(--red-300);
+  background: #fff;
+  padding: 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--red-800);
+  cursor: pointer;
+}
+
+.btnWipe:hover:not(:disabled) {
+  background: var(--red-50);
+}
+
+.btnWipe:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.success {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  color: var(--green-700);
+}
