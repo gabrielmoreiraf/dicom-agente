@@ -126,18 +126,12 @@ export function LoginPage() {
               )}
             </button>
           </form>
+
+          <p className={styles.note}>
+            Acesso permitido somente com autorização da Secretaria de Agricultura.
+          </p>
         </div>
 
-        {/* <p className={styles.note}>
-          Sessão e diagnósticos armazenados localmente (IndexedDB).{" "}
-          <Link to="/privacidade" className={styles.privacyLink}>
-            Privacidade
-          </Link>
-        </p> */}
-        <p className={styles.note}>
-          Acesso permitido somente com autorização da Secretaria de Agricultura.
-        </p>
-          
         <footer className={styles.footer}>
           <img
             src="/logo_itatira.png"
