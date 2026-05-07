@@ -5,9 +5,8 @@ import type { DiagnosisFormValues } from "@/schemas/diagnosis";
 import wc from "./wizardCommon.module.css";
 
 export function StepAssinatura() {
-  const { control, watch, clearErrors, formState } = useFormContext<DiagnosisFormValues>();
+  const { control, watch, clearErrors } = useFormContext<DiagnosisFormValues>();
   const values = watch();
-  const signatureError = formState.errors.signature_data_url?.message;
 
   const dataLabel = values.data_coleta
     ? formatIsoDateBR(values.data_coleta) || values.data_coleta
@@ -37,11 +36,6 @@ export function StepAssinatura() {
             />
           )}
         />
-        {signatureError ? (
-          <p className={wc.signatureFieldError} role="alert">
-            {signatureError}
-          </p>
-        ) : null}
       </div>
 
       <div className={wc.summaryCard}>

@@ -1,5 +1,6 @@
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
 import { DatePickerField } from "@/components/ui/DatePickerField";
+import { RadioSimNao } from "@/features/diagnoses/wizard/RadioSimNao";
 import { wizardFieldClass as fieldClass } from "@/features/diagnoses/wizard/wizardFieldClass";
 import type { DiagnosisFormValues } from "@/schemas/diagnosis";
 import wc from "./wizardCommon.module.css";
@@ -69,6 +70,14 @@ export function StepAssociacao() {
           <span className={wc.labelMd}>Nome da associação</span>
           <input {...register("assoc_nome")} className={fieldClass} />
         </label>
+        <label className={wc.block}>
+          <span className={wc.labelMd}>CNPJ</span>
+          <input {...register("assoc_cnpj")} className={fieldClass} placeholder="00.000.000/0000-00" />
+        </label>
+        <div className={wc.block}>
+          <span className={wc.labelMd}>Tem sede própria?</span>
+          <RadioSimNao name="assoc_sede_propria" />
+        </div>
         <label className={wc.block}>
           <span className={wc.labelMd}>Data de fundação</span>
           <Controller

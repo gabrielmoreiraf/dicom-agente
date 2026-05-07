@@ -1,6 +1,7 @@
 import Dexie, { type Table } from "dexie";
 import type { DiagnosisRecord } from "@/domain/diagnosis";
 import type { ComunidadeItem } from "@/domain/comunidades";
+import type { FormTemplateCacheMeta } from "@/domain/formTemplate";
 
 export type { DiagnosisRecord, DiagnosisStatus } from "@/domain/diagnosis";
 
@@ -33,6 +34,7 @@ export class DiagnosticoDB extends Dexie {
   session!: Table<SessionRecord, string>;
   comunidades_cache!: Table<ComunidadeItem, string>;
   catalog_meta!: Table<CatalogMetaRecord, string>;
+  form_template_meta!: Table<FormTemplateCacheMeta, string>;
 
   constructor() {
     super("diagnostico_comunidades_v1");
@@ -100,6 +102,15 @@ export class DiagnosticoDB extends Dexie {
       session: "id",
       comunidades_cache: "id, nome",
       catalog_meta: "id",
+    });
+    /** v7: cache do formulário de diagnóstico (perguntas extras do painel). */
+    this.version(7).stores({
+      diagnoses:
+        "local_id, status, server_id, updated_at, deleted_at, sync_started_at",
+      session: "id",
+      comunidades_cache: "id, nome",
+      catalog_meta: "id",
+      form_template_meta: "id",
     });
   }
 }

@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useState } from "react";
 import {
   Navigate,
   useLocation,
@@ -9,13 +9,19 @@ import {
 import { FormProvider, useForm } from "react-hook-form";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { WizardStepRouter } from "@/features/diagnoses/wizard/WizardStepRouter";
-import {
-  completeDiagnosisSchema,
-  getDefaultDiagnosisValues,
-  STEP_LABELS,
-  stepSchemas,
-} from "@/schemas/diagnosis";
+import { getDefaultDiagnosisValues, mergeDiagnosisPayload } from "@/schemas/diagnosis";
 import type { DiagnosisFormValues } from "@/schemas/diagnosis";
+import {
+  applyExtraDefaultsToForm,
+  loadDiagnosisFormTemplate,
+  splitExtraTemplateFields,
+} from "@/features/forms/services/formTemplateCampo";
+import { isFormsModuleEnabled } from "@/lib/featureFlags";
+import {
+  buildCompleteDiagnosisSchema,
+  getSchemaForWizardStep,
+  getWizardLayout,
+} from "@/features/forms/wizardLayout";
 import { DraftSaveDialog } from "@/features/diagnoses/components/DraftSaveDialog";
 import {
   canEditDiagnosis,
@@ -66,6 +72,29 @@ export function DiagnosisWizardPage() {
     enabled: !!localId,
   });
 
+  const formsModuleOn = isFormsModuleEnabled();
+
+  const { data: formTemplate, isLoading: formTemplateLoading } = useQuery({
+    queryKey: ["form-template-campo", formsModuleOn],
+    queryFn: loadDiagnosisFormTemplate,
+    staleTime: 5 * 60_000,
+    retry: formsModuleOn ? 1 : 0,
+    enabled: formsModuleOn,
+  });
+
+  const extraFields = useMemo(
+    () => splitExtraTemplateFields(formTemplate?.fields ?? []),
+    [formTemplate],
+  );
+  const layout = useMemo(
+    () => getWizardLayout(extraFields.length),
+    [extraFields.length],
+  );
+  const completeSchema = useMemo(
+    () => buildCompleteDiagnosisSchema(extraFields),
+    [extraFields],
+  );
+
   const form = useForm<DiagnosisFormValues>({
     defaultValues: getDefaultDiagnosisValues(),
   });
@@ -86,14 +115,18 @@ export function DiagnosisWizardPage() {
     if (!raw) return;
     sessionStorage.removeItem(wizardStepSessionKey(localId));
     const n = Number(raw);
-    if (n >= 1 && n <= 8) setStep(n);
-  }, [localId]);
+    if (n >= 1 && n <= layout.stepCount) setStep(n);
+  }, [localId, layout.stepCount]);
 
   useEffect(() => {
     if (!record) return;
     if (isDirty) return;
-    reset(record.payload);
-  }, [record, reset, isDirty]);
+    const base = mergeDiagnosisPayload(record.payload);
+    const withExtras = formsModuleOn
+      ? applyExtraDefaultsToForm(extraFields, base)
+      : base;
+    reset(withExtras as DiagnosisFormValues);
+  }, [record, formTemplate, extraFields, formsModuleOn, reset, isDirty]);
 
   /** Cria `localId` imediatamente em `/diagnostico/novo` e redireciona — habilita autosave e evita dados só em memória. */
   useEffect(() => {
@@ -155,7 +188,7 @@ export function DiagnosisWizardPage() {
   });
 
   const goNext = async () => {
-    const schema = stepSchemas[step - 1];
+    const schema = getSchemaForWizardStep(step, layout, extraFields);
     if (!schema) return;
     const r = schema.safeParse(getValues());
     if (!r.success) {
@@ -183,7 +216,7 @@ export function DiagnosisWizardPage() {
       return;
     }
 
-    setStep((s) => Math.min(8, s + 1));
+    setStep((s) => Math.min(layout.stepCount, s + 1));
   };
 
   const goPrev = async () => {
@@ -214,9 +247,9 @@ export function DiagnosisWizardPage() {
 
   const signatureWatch = watch("signature_data_url");
   useEffect(() => {
-    if (step !== 8) return;
+    if (step !== layout.assinaturaStep) return;
     if (signatureWatch?.trim()) setStepValidationMessage(null);
-  }, [signatureWatch, step]);
+  }, [signatureWatch, step, layout.assinaturaStep]);
 
   const wizardTitle = readOnly
     ? "Visualizar diagnóstico"
@@ -248,7 +281,7 @@ export function DiagnosisWizardPage() {
   const onFinish = async () => {
     if (!localId || readOnly) return;
     setStepValidationMessage(null);
-    const r = completeDiagnosisSchema.safeParse(getValues());
+    const r = completeSchema.safeParse(getValues());
     if (!r.success) {
       applyZodIssuesToForm(r.error, setError);
       const msgs = r.error.issues.map((i) => i.message).filter(Boolean);
@@ -281,8 +314,16 @@ export function DiagnosisWizardPage() {
     );
   }
 
-  if (!isNewWizard && isLoading) {
+  if (!isNewWizard && (isLoading || (formsModuleOn && formTemplateLoading))) {
     return <div className={styles.loading}>Carregando…</div>;
+  }
+
+  if (formsModuleOn && !isNewWizard && !formTemplate) {
+    return (
+      <div className={styles.notFound}>
+        Não foi possível carregar o formulário. Verifique a conexão e tente novamente.
+      </div>
+    );
   }
 
   if (!isNewWizard && !record) {
@@ -306,12 +347,16 @@ export function DiagnosisWizardPage() {
           </header>
 
           <fieldset disabled className={`${styles.fieldsetRead} ${styles.fieldsetReadDisabled}`}>
-            {STEP_LABELS.map((label, i) => (
-              <section key={label} className={styles.section}>
+            {layout.labels.map((label, i) => (
+              <section key={`${label}-${i}`} className={styles.section}>
                 <h2 className={styles.sectionTitle}>
                   {i + 1}. {label}
                 </h2>
-                <WizardStepRouter step={i + 1} />
+                <WizardStepRouter
+                  uiStep={i + 1}
+                  layout={layout}
+                  extraFields={extraFields}
+                />
               </section>
             ))}
           </fieldset>
@@ -337,14 +382,14 @@ export function DiagnosisWizardPage() {
           <p className={styles.kicker}>Formulário de coleta</p>
           <h1 className={styles.editTitle}>{wizardTitle}</h1>
           <p className={styles.editSub}>
-            Etapa {step} de 8 · {STEP_LABELS[step - 1]}
+            Etapa {step} de {layout.stepCount} · {layout.labels[step - 1]}
           </p>
         </header>
 
         <div className={styles.progressTrack}>
           <div
             className={styles.progressFill}
-            style={{ width: `${(step / 8) * 100}%` }}
+            style={{ width: `${(step / layout.stepCount) * 100}%` }}
           />
         </div>
 
@@ -361,7 +406,7 @@ export function DiagnosisWizardPage() {
         ) : null}
 
         <fieldset className={styles.fieldset}>
-          <WizardStepRouter step={step} />
+          <WizardStepRouter uiStep={step} layout={layout} extraFields={extraFields} />
         </fieldset>
 
         <div className={styles.btnRow}>
@@ -370,14 +415,14 @@ export function DiagnosisWizardPage() {
               Voltar
             </button>
           )}
-          {step < 8 && (
+          {step < layout.stepCount && (
             <button type="button" onClick={() => void goNext()} className={styles.btnPrimary}>
-              {step === 7 ? "Revisão" : "Avançar"}
+              {step === layout.assinaturaStep - 1 ? "Revisão" : "Avançar"}
             </button>
           )}
         </div>
 
-        {step === 8 ? (
+        {step === layout.assinaturaStep ? (
           <>
             <div className={styles.offlineHintCard} role="note">
               <strong>Sem internet?</strong> Use <strong>Salvar rascunho</strong> para guardar no aparelho

@@ -14,6 +14,7 @@ import {
   formatComunidadesCatalogLabel,
   refreshComunidadesCatalog,
 } from "@/features/diagnoses/services/comunidades";
+import { fetchAssociationByComunidade } from "@/features/diagnoses/services/associations";
 import { useOnlineStatus } from "@/hooks/useOnlineStatus";
 import type { DiagnosisFormValues } from "@/schemas/diagnosis";
 import f from "@/styles/forms.module.css";
@@ -65,11 +66,21 @@ export function StepIdentification() {
   useEffect(() => {
     if (!comunidadeNome?.trim()) {
       setValue("distrito", "");
+      setValue("assoc_nome", "");
       return;
     }
     const found = comunidades?.find((c) => c.nome === comunidadeNome);
     const d = found?.distrito?.trim();
     setValue("distrito", d ?? "");
+
+    let cancelled = false;
+    void fetchAssociationByComunidade(comunidadeNome).then((assoc) => {
+      if (cancelled) return;
+      setValue("assoc_nome", assoc?.nome?.trim() ?? "");
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [comunidadeNome, comunidades, setValue]);
 
   useEffect(() => {
@@ -164,6 +175,27 @@ export function StepIdentification() {
         <span className={wizardLabelClass}>Distrito</span>
         <input {...register("distrito")} className={wizardFieldClass} />
       </label>
+      <div className={`${wc.spanMd2} ${wc.block}`}>
+        <span className={wizardLabelClass}>Comunidades vizinhas</span>
+        <div className={wc.gridSm2}>
+          <label className={wc.block}>
+            <span className={wc.labelXs}>Leste</span>
+            <input {...register("vizinha_leste")} className={wizardFieldClass} />
+          </label>
+          <label className={wc.block}>
+            <span className={wc.labelXs}>Oeste</span>
+            <input {...register("vizinha_oeste")} className={wizardFieldClass} />
+          </label>
+          <label className={wc.block}>
+            <span className={wc.labelXs}>Norte</span>
+            <input {...register("vizinha_norte")} className={wizardFieldClass} />
+          </label>
+          <label className={wc.block}>
+            <span className={wc.labelXs}>Sul</span>
+            <input {...register("vizinha_sul")} className={wizardFieldClass} />
+          </label>
+        </div>
+      </div>
       <label className={wc.block}>
         <span className={wizardLabelClass}>Data da coleta</span>
         <Controller

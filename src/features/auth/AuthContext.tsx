@@ -11,6 +11,8 @@ import { loginRequest, changePasswordRequest } from "@/services/authApi";
 import type { AuthUser } from "@/types/auth";
 import type { ChangePasswordRequest } from "@/types/auth";
 import { refreshComunidadesCatalog } from "@/features/diagnoses/services/comunidades";
+import { refreshDiagnosisFormTemplate } from "@/features/forms/services/formTemplateCampo";
+import { isFormsModuleEnabled } from "@/lib/featureFlags";
 import {
   getSession,
   logout as logoutDb,
@@ -23,6 +25,7 @@ import {
  * Evita reexecução em remounts (ex.: React Strict Mode) e quando `accessToken` oscila sem novo reload.
  */
 let communityCatalogColdStartPrefetchDone = false;
+let formTemplateColdStartPrefetchDone = false;
 
 type AuthState = {
   user: AuthUser | null;
@@ -68,6 +71,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     void refreshComunidadesCatalog().catch(() => {});
+
+    if (isFormsModuleEnabled() && !formTemplateColdStartPrefetchDone) {
+      formTemplateColdStartPrefetchDone = true;
+      void refreshDiagnosisFormTemplate().catch(() => {});
+    }
   }, [loading, accessToken]);
 
   const login = useCallback(async (cpf: string, password: string) => {
@@ -85,6 +93,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setAccessToken(res.accessToken);
     setUserState(sessionUser);
     void refreshComunidadesCatalog().catch(() => {});
+    if (isFormsModuleEnabled()) {
+      void refreshDiagnosisFormTemplate().catch(() => {});
+    }
   }, []);
 
   const logout = useCallback(async () => {

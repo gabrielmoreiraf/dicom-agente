@@ -1,29 +1,13 @@
 import { useFormContext } from "react-hook-form";
 import { NumericField, type DiagnosisNumericPath } from "@/features/diagnoses/wizard/NumericField";
+import { RadioSimNao } from "@/features/diagnoses/wizard/RadioSimNao";
 import { wizardFieldClass as field } from "@/features/diagnoses/wizard/wizardFieldClass";
 import type { DiagnosisFormValues } from "@/schemas/diagnosis";
 import wc from "./wizardCommon.module.css";
 
-const simNao = [
-  { v: "sim" as const, l: "Sim" },
-  { v: "nao" as const, l: "Não" },
-];
-
-function RadioPair({ name }: { name: "abast_possui" | "abast_func" }) {
-  const { register } = useFormContext<DiagnosisFormValues>();
-  return (
-    <div className={wc.radioRow}>
-      {simNao.map(({ v, l }) => (
-        <label key={v} className={wc.radioLabel}>
-          <input type="radio" value={v} {...register(name)} />
-          <span className={wc.radioText}>{l}</span>
-        </label>
-      ))}
-    </div>
-  );
-}
-
 export function StepHidrico() {
+  const { register } = useFormContext<DiagnosisFormValues>();
+
   const mini = (name: DiagnosisNumericPath, label: string) => (
     <label key={String(name)} className={wc.block}>
       <span className={wc.labelXs}>{label}</span>
@@ -40,12 +24,15 @@ export function StepHidrico() {
           {mini("cist_enxurrada", "Enxurrada / calçadão")}
           {mini("cist_alvenaria", "Alvenaria")}
           {mini("cist_comunitarias", "Comunitárias")}
+          {mini("cist_sem_placa", "Casas sem cisterna de placa")}
         </div>
       </section>
 
       <section className={wc.section}>
         <h3 className={wc.sectionTitle}>Poços profundos</h3>
         <div className={wc.sectionGrid}>
+          {mini("poco_publico", "Público")}
+          {mini("poco_particular", "Particular")}
           {mini("poco_func", "Funcionando")}
           {mini("poco_obstruido", "Obstruído")}
           {mini("poco_dessal", "Com dessalinizador")}
@@ -56,19 +43,45 @@ export function StepHidrico() {
       <section className={wc.section}>
         <h3 className={wc.sectionTitlePlain}>Sistema de abastecimento</h3>
         <p className={wc.prompt}>Possui sistema?</p>
-        <RadioPair name="abast_possui" />
+        <RadioSimNao name="abast_possui" />
         <p className={wc.promptSpaced}>Funcionando?</p>
-        <RadioPair name="abast_func" />
+        <RadioSimNao name="abast_func" />
+        <label className={`${wc.block} ${wc.promptSpaced}`}>
+          <span className={wc.labelXs}>Motivo (se não funciona)</span>
+          <input {...register("abast_motivo")} className={field} />
+        </label>
       </section>
 
       <section className={wc.section}>
-        <h3 className={wc.sectionTitle}>Outros</h3>
+        <h3 className={wc.sectionTitle}>Cacimbas</h3>
         <div className={wc.sectionGrid}>
-          {mini("cacimba", "Cacimba")}
-          {mini("barragens_sub", "Barragens subterrâneas")}
-          {mini("cacimbao_alv", "Cacimbão de alvenaria")}
-          {mini("acude_com", "Açudes comunitários")}
-          {mini("acude_part", "Açudes particulares")}
+          {mini("cacimba_publico", "Público")}
+          {mini("cacimba_particular", "Particular")}
+        </div>
+      </section>
+
+      <section className={wc.section}>
+        <h3 className={wc.sectionTitle}>Cacimbões</h3>
+        <div className={wc.sectionGrid}>
+          {mini("cacimbao_publico", "Público")}
+          {mini("cacimbao_particular", "Particular")}
+          {mini("cacimbao_alv", "De alvenaria")}
+        </div>
+      </section>
+
+      <section className={wc.section}>
+        <h3 className={wc.sectionTitle}>Barragens subterrâneas</h3>
+        <div className={wc.sectionGrid}>
+          {mini("barragens_sub_publico", "Público")}
+          {mini("barragens_sub_particular", "Particular")}
+        </div>
+      </section>
+
+      <section className={wc.section}>
+        <h3 className={wc.sectionTitle}>Açudes</h3>
+        <div className={wc.sectionGrid}>
+          {mini("acude_com", "Comunitários")}
+          {mini("acude_part", "Particulares")}
         </div>
       </section>
     </div>

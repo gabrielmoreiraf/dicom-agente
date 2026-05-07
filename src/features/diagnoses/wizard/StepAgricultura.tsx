@@ -5,6 +5,7 @@ import wc from "./wizardCommon.module.css";
 const fields: [DiagnosisNumericPath, string][] = [
   ["agr_milho", "Milho"],
   ["agr_feijao", "Feijão"],
+  ["agr_fava", "Fava"],
   ["agr_algodao", "Algodão"],
   ["agr_mamona", "Mamona"],
   ["agr_mandioca", "Mandioca / macaxeira"],
@@ -12,7 +13,11 @@ const fields: [DiagnosisNumericPath, string][] = [
   ["agr_banana", "Banana"],
   ["agr_caju", "Caju"],
   ["agr_mamao", "Mamão"],
+  ["agr_goiaba", "Goiaba"],
   ["agr_hortalicas", "Hortaliças"],
+  ["agr_batata_doce", "Batata doce"],
+  ["agr_palma", "Palma"],
+  ["agr_capim_elefante", "Capim-elefante"],
 ];
 
 export function StepAgricultura() {

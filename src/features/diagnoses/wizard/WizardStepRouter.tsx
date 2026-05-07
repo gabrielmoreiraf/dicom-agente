@@ -2,13 +2,30 @@ import { StepAgricultura } from "./StepAgricultura";
 import { StepAssinatura } from "./StepAssinatura";
 import { StepAssociacao } from "./StepAssociacao";
 import { StepCasas } from "./StepCasas";
+import { StepEmpregabilidade } from "./StepEmpregabilidade";
+import { StepExtras } from "./StepExtras";
 import { StepFamilies } from "./StepFamilies";
 import { StepHidrico } from "./StepHidrico";
 import { StepIdentification } from "./StepIdentification";
 import { StepPecuaria } from "./StepPecuaria";
+import type { FormTemplateField } from "@/domain/formTemplate";
+import { getWizardRouterStep } from "@/features/forms/wizardLayout";
+import type { WizardLayout } from "@/features/forms/wizardLayout";
 
-export function WizardStepRouter({ step }: { step: number }) {
-  switch (step) {
+type Props = {
+  uiStep: number;
+  layout: WizardLayout;
+  extraFields: FormTemplateField[];
+};
+
+export function WizardStepRouter({ uiStep, layout, extraFields }: Props) {
+  const routed = getWizardRouterStep(uiStep, layout);
+
+  if (routed === "extras") {
+    return <StepExtras fields={extraFields} />;
+  }
+
+  switch (routed) {
     case 1:
       return <StepIdentification />;
     case 2:
@@ -18,12 +35,14 @@ export function WizardStepRouter({ step }: { step: number }) {
     case 4:
       return <StepHidrico />;
     case 5:
-      return <StepPecuaria />;
+      return <StepEmpregabilidade />;
     case 6:
-      return <StepAgricultura />;
+      return <StepPecuaria />;
     case 7:
-      return <StepAssociacao />;
+      return <StepAgricultura />;
     case 8:
+      return <StepAssociacao />;
+    case 9:
       return <StepAssinatura />;
     default:
       return null;

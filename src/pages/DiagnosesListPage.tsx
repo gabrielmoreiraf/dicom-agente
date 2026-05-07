@@ -10,7 +10,10 @@ import {
   deleteDraftLocal,
   MAX_POST_COMPLETION_EDITS,
 } from "@/features/diagnoses/services/diagnosisService";
-import { queueDiagnosisSync, syncPendingDiagnoses } from "@/features/diagnoses/services/syncService";
+import {
+  queueDiagnosisSync,
+  syncPendingDiagnoses,
+} from "@/features/diagnoses/services/syncService";
 import styles from "./DiagnosesListPage.module.css";
 
 const statusLabel: Record<DiagnosisStatus, string> = {
@@ -55,8 +58,9 @@ export function DiagnosesListPage() {
         </p>
       </div>
       <p className={styles.info}>
-        Rascunhos podem ser excluídos. Após concluir um diagnóstico, você pode editar no máximo{" "}
-        {MAX_POST_COMPLETION_EDITS} vezes; depois, apenas visualizar.
+        Rascunhos podem ser excluídos. Após concluir um diagnóstico, você pode
+        editar no máximo {MAX_POST_COMPLETION_EDITS} vezes; depois, apenas
+        visualizar.
       </p>
       <div className={styles.list}>
         {rows?.map((r) => {
@@ -70,11 +74,14 @@ export function DiagnosesListPage() {
             <div key={r.local_id} className={styles.card}>
               <div>
                 <div className={styles.cardTitle}>{cardHeading}</div>
-                <div className={styles.cardMeta}>{r.payload.data_coleta || "—"}</div>
+                <div className={styles.cardMeta}>
+                  {r.payload.data_coleta || "—"}
+                </div>
                 <span className={styles.badge}>{statusLabel[r.status]}</span>
                 {r.has_been_completed ? (
                   <p className={styles.meta}>
-                    Edições após conclusão: {editsUsed}/{MAX_POST_COMPLETION_EDITS}
+                    Edições após conclusão: {editsUsed}/
+                    {MAX_POST_COMPLETION_EDITS}
                     {!editable ? " · somente leitura" : ""}
                   </p>
                 ) : null}
@@ -98,7 +105,10 @@ export function DiagnosesListPage() {
                   Visualizar
                 </Link>
                 {editable ? (
-                  <Link to={`/diagnostico/${r.local_id}`} className={styles.linkEdit}>
+                  <Link
+                    to={`/diagnostico/${r.local_id}`}
+                    className={styles.linkEdit}
+                  >
                     Editar
                   </Link>
                 ) : null}
@@ -119,7 +129,9 @@ export function DiagnosesListPage() {
             </div>
           );
         })}
-        {!rows?.length && <p className={styles.empty}>Nenhum diagnóstico ainda.</p>}
+        {!rows?.length && (
+          <p className={styles.empty}>Nenhum diagnóstico ainda.</p>
+        )}
       </div>
 
       <ConfirmDialog

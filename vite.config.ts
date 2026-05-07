@@ -14,6 +14,9 @@ const apiProxy = {
   "/health": { target: apiTarget, changeOrigin: true },
   "/diagnoses": { target: apiTarget, changeOrigin: true },
   "/comunidades": { target: apiTarget, changeOrigin: true },
+  "/associacoes": { target: apiTarget, changeOrigin: true },
+  "/formularios": { target: apiTarget, changeOrigin: true },
+  "/categorias-formulario": { target: apiTarget, changeOrigin: true },
 };
 
 export default defineConfig({
